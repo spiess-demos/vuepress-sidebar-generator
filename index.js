@@ -4,14 +4,14 @@ const utils = require('./utils');
 class SidebarGen {
 
   constructor () {
-    
+
   };
 
   //動かない
   getSidebarItem (targetdir) {
     let workingdir = './docs';
     let files = utils.getFiles(workingdir, targetdir);
-    
+
     return utils.getFilepaths(files, targetdir).map((path) => {
       return "[" + path + " ]";
     }).join();
@@ -38,12 +38,10 @@ class SidebarGen {
   };
 
   // サイドバーアイテムの作成 メイン
-  getSidebarList (isCollapsable = true) {
+  getSidebarList (isCollapsable = true, workingdir = './docs') {
     //rootパス用
     let root = ['']
-    //vuepressルートディレクトリ
-    let workingdir = './docs';
-  
+
     //root直下のファイル群はグループ化しないためファイルを単品で表示する。
     //root直下のファイル一覧取得
     let rootfiles = utils.getRootFileItems(workingdir);
@@ -53,7 +51,7 @@ class SidebarGen {
       //return '/' + file;
       return path.join(file);
     });
-  
+
     //ディレクトリ一覧の取得
     let directores = utils.getDirectores(workingdir);
 
@@ -72,7 +70,7 @@ class SidebarGen {
     // root直下のファイル群とroot配下のディレクトリ群を結合してサイドバーのアイテムとする。
     // ※root直下のREADME.mdについては'/'で表現される。
     let sidebarList = root.concat(rootItems, directoryGroups);
-  
+
     return sidebarList;
   };
 }
