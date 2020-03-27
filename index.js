@@ -1,23 +1,12 @@
-const path = require('path');
-const utils = require('./utils');
+const path = require('path')
+const utils = require('./utils')
+const fs = require('fs')
+const slash = require('slash')
 
 class SidebarGen {
 
-  constructor () {
+  constructor () {}
 
-  };
-
-  //動かない
-  getSidebarItem (targetdir) {
-    let workingdir = './docs';
-    let files = utils.getFiles(workingdir, targetdir);
-
-    return utils.getFilepaths(files, targetdir).map((path) => {
-      return "[" + path + " ]";
-    }).join();
-  };
-
-  // サイドバーアイテムの作成 メイン
   getSidebarGroup (targetdir = '/', title = '', isCollapsable = true) {
     let workingdir = './docs';
 
@@ -37,41 +26,32 @@ class SidebarGen {
     return directoryGroup;
   };
 
-  // サイドバーアイテムの作成 メイン
   getSidebarList (isCollapsable = true, workingdir = './docs') {
-    //rootパス用
-    let root = ['']
 
-    //root直下のファイル群はグループ化しないためファイルを単品で表示する。
-    //root直下のファイル一覧取得
-    let rootfiles = utils.getRootFileItems(workingdir);
+    // Collect files except Readme.md on given root level
+    let rootItems = utils.getRootFileItems(workingdir).map((file) => {
+      return path.join(file)
+    })
 
-    //ファイルパスの生成
-    let rootItems = rootfiles.map((file) => {
-      //return '/' + file;
-      return path.join(file);
-    });
-
-    //ディレクトリ一覧の取得
     let directores = utils.getDirectores(workingdir);
 
-    //サイドバーアイテムの作成（ディレクトリ毎）
     let directoryGroups = directores.map((directory) => {
-      //サイドバーアイテムの作成
-      return {
-        // グループリストタイトル
+      let structure = {
         title: directory,
-        // グループリスト展開有無
         collapsable: isCollapsable,
-        // ディレクトリ配下のファイルリスト作成
         children: utils.getFileitems(workingdir, directory)
-      };
-    });
-    // root直下のファイル群とroot配下のディレクトリ群を結合してサイドバーのアイテムとする。
-    // ※root直下のREADME.mdについては'/'で表現される。
-    let sidebarList = root.concat(rootItems, directoryGroups);
+      }
 
-    return sidebarList;
+      // If the directory in question has a README.md file in it, make it a link
+      if (fs.existsSync(path.join(workingdir, directory, 'README.md'))) {
+        structure.path = '/' + slash(path.join(workingdir, directory)) + '/'
+      }
+
+      return structure
+    })
+
+    // Return the final structure as expected by vuepress
+    return [''].concat(rootItems, directoryGroups)
   };
 }
 module.exports = new SidebarGen();

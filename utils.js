@@ -1,5 +1,6 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs')
+const path = require('path')
+const slash = require('slash')
 
 class SidebarUtils {
   //ユーティリティ
@@ -35,21 +36,12 @@ class SidebarUtils {
     });
   };
 
-  // 対象ディレクトリ配下のファイルを取得
   getFileitems(workingdir, targetdir) {
-    //return fs.readdirSync(workingdir + "/" + targetdir).map((file) => {
-    return fs.readdirSync(path.join(workingdir, targetdir)).map((file) => {
-      // 子ディレクトリ配下にREADME.mdが存在する場合は子ディレクトリのパスとする。
-      if (file === 'README.md') {
-        // README.mdの場合は子ディレクトリ直下のパスとする。
-        //return "/" + targetdir + "/"
-        return path.join(targetdir);
-      } 
-      // README.md以外の場合は子ディレクトリ+ファイル名を返す。
-      //return "/" + targetdir + "/" + file;
-      return path.join(targetdir, file);
-    })
-  };
+    return fs.readdirSync(path.join(workingdir, targetdir))
+      .filter(file => file !== 'README.md')
+      .map((file) => '/' + slash(path.join(workingdir, targetdir, file)) + '/')
+  }
+
   // ディレクトリ一覧の取得
   getDirectores (workingdir) {
     // root配下のファイル＆ディレクトリ一覧取得
@@ -65,20 +57,11 @@ class SidebarUtils {
     });
   };
 
-  // ルート直下のファイルを取得（ex.README.md, privacy.md...etc）
   getRootFileItems (workingdir) {
-    // root配下のファイル＆ディレクトリ一覧取得
     return fs.readdirSync(workingdir).filter((file) => {
-      //root配下のREADME.mdは'/'で表現されるので排除する。
-      if (file === 'README.md') {
-        // README.mdの場合：false
-        return false;
-      }
-      // ファイル存在判定 and マークダウンファイル判定
-      //return isFile(workingdir + '/' + file);
-      return this.isFile(path.join(workingdir, file));
-    });
-  };
+      return file === 'README.md' ? false : this.isFile(path.join(workingdir, file))
+    })
+  }
 
   // ファイル存在確認（マークダウンファイル判定）
   isFile(targetpath) {
