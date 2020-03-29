@@ -19,5 +19,8 @@
     "vuepress",
     "sidebar"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "front-matter": "^3.1.0"
+  }
 }

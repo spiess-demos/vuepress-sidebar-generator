@@ -1,40 +1,31 @@
 const fs = require('fs')
 const path = require('path')
 const slash = require('slash')
+const fm = require('front-matter')
 
 class SidebarUtils {
-  //ユーティリティ
 
-  //グループタイトル変換
-  toTitle(title, targetpath) {
+  toTitle (title, targetpath) {
     if (title === '') {
-      return targetpath.replace('/', '');
+      return targetpath.replace('/', '')
     }
-    return title;
-  };
+    return title
+  }
 
-  // 対象ディレクトリ配下のファイルを取得
-  getFilepaths(files, targetdir) {
+  getFilepaths (files, targetdir) {
     return files.map((file) => {
-      // 子ディレクトリ配下にREADME.mdが存在する場合は子ディレクトリのパスとする。
       if (file === 'README.md') {
-        // README.mdの場合は子ディレクトリ直下のパスとする。
-        //return targetdir;
         return path.join(targetdir);
       }
-      // README.md以外の場合は子ディレクトリ+ファイル名を返す。
-      //return targetdir + file;
-      return path.join(targetdir, file);
-    });
-  };
+      return path.join(targetdir, file)
+    })
+  }
 
   getFiles (workingdir, targetpath) {
-    //return fs.readdirSync(workingdir + targetpath).filter((file) => {
     return fs.readdirSync(path.join(workingdir, targetpath)).filter((file) => {
-      //return isFile(workingdir + targetpath + file);
-      return this.isFile(path.join(workingdir, targetpath, file));
-    });
-  };
+      return this.isMarkdownFile(path.join(workingdir, targetpath, file))
+    })
+  }
 
   getFileitems(workingdir, targetdir) {
     return fs.readdirSync(path.join(workingdir, targetdir))
@@ -42,40 +33,52 @@ class SidebarUtils {
       .map((file) => '/' + slash(path.join(workingdir, targetdir, file)) + '/')
   }
 
-  // ディレクトリ一覧の取得
-  getDirectores (workingdir) {
-    // root配下のファイル＆ディレクトリ一覧取得
-    return fs.readdirSync(workingdir).filter((childdir) => {
-      // .vuepressのみ除外
-      if (childdir === '.vuepress') {
-        //対象ディレクトリが.vuepressの場合、false
-        return false;
-      }
-      // ディレクトリの場合：true 対象がファイルであった場合はfalse
-      //return isDirectory(workingdir + '/' + childdir);
-      return this.isDirectory(path.join(workingdir, childdir));
-    });
-  };
-
-  getRootFileItems (workingdir) {
-    return fs.readdirSync(workingdir).filter((file) => {
-      return file === 'README.md' ? false : this.isFile(path.join(workingdir, file))
+  getDirectories (targetdir) {
+    return fs.readdirSync(targetdir).filter((item) => {
+      return item === '.vuepress' ? false : this.isDirectory(path.join(targetdir, item))
     })
   }
 
-  // ファイル存在確認（マークダウンファイル判定）
-  isFile(targetpath) {
-    return fs.existsSync(targetpath) && fs.statSync(targetpath).isFile() && path.extname(targetpath) === '.md';
-  };
+  getFiles (targetdir) {
+    return fs.readdirSync(targetdir).filter((file) => {
+      return file === 'README.md' ? false : this.isMarkdownFile(path.join(targetdir, file))
+    })
+  }
 
-  // ディレクトリ存在確認
-  isDirectory(targetpath) {
-    // existsSyncは非推奨だから使わないほうが良い？
-    // 参考；fs.statSyncでファイルの存在判定 - Qiita https://qiita.com/tokimari/items/82222e1f99b2b9eb1fb8
-    // やっぱりこのままでいいっぽい
-    // 参考：Node.js でディレクトリかどうかを判定する方法 | phiary http://phiary.me/nodejs-check-is-directory/
-    // ディレクトリが存在する かつ 対象パスはディレクトリか否か
-    return fs.existsSync(targetpath) && fs.statSync(targetpath).isDirectory();
-  };
+  isMarkdownFile (targetpath) {
+    return fs.existsSync(targetpath) && fs.statSync(targetpath).isFile() && path.extname(targetpath) === '.md'
+  }
+
+  isDirectory (targetpath) {
+    return fs.existsSync(targetpath) && fs.statSync(targetpath).isDirectory()
+  }
+
+  getDirectoryObject (workingDir, currentDir) {
+
+    let directoryObject = {
+      children: utils.getFileitems(workingdir, currentDir)
+    }
+
+    // If the directory in question has a README.md file in it, make it a link
+    const readmeFile = path.join(workingdir, currentDir, 'README.md')
+    if (isMarkdownFile(readmeFile)) {
+      directoryObject.title = getFrontMatterTitleFromFile(readmeFile)
+      directoryObject.path = '/' + slash(path.join(workingdir, directory)) + '/'
+    }
+
+    return structure
+
+
+  }
+
+  getFrontMatterTitleFromFile (readmeFile) {
+    fs.readFile(readmeFile, 'utf8', function(err, data) {
+      if (err) throw err
+
+      let content = fm(data)
+
+      console.log(content)
+    })
+  }
 }
 module.exports = new SidebarUtils();
